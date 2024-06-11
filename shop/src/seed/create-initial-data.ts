@@ -1,0 +1,29 @@
+import { Seeder, SeederFactoryManager } from 'typeorm-extension';
+import { DataSource } from 'typeorm';
+import { Users } from 'src/entities/Users';
+
+export default class UserSeeder implements Seeder {
+  public async run(
+    dataSource: DataSource,
+    factoryManager: SeederFactoryManager,
+  ): Promise<any> {
+    const workspacesRepository = dataSource.getRepository(Users);
+    await workspacesRepository.insert([
+      {
+        id: 1,
+        email: 'abc123@naver.com',
+        nickname: '에이비',
+        password: '1234',
+      },
+    ]);
+    // const channelsRepository = dataSource.getRepository(Channels);
+    // await channelsRepository.insert([
+    //   {
+    //     id: 1,
+    //     name: '일반',
+    //     WorkspaceId: 1,
+    //     private: false,
+    //   },
+    // ]);
+  }
+}
