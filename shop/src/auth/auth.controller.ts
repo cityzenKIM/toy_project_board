@@ -2,18 +2,18 @@ import {
   Controller,
   Post,
   Req,
-  Request,
   Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 
-@Controller('auth')
+@ApiTags('AUTH')
+@Controller('api/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -25,7 +25,24 @@ export class AuthController {
       req.user,
     );
     res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: true });
-    return { accessToken };
+    return {
+      statusCode: 200,
+      message: '로그인 성공',
+      accessToken,
+    };
+  }
+
+  @UseGuards(LocalAuthGuard)
+  @Post('logout')
+  async logout(@Req() req, @Res() res: Response) {
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: true,
+    });
+    return {
+      statusCode: 200,
+      message: '로그아웃',
+    };
   }
 
   @ApiOperation({ summary: '토큰 재발급' })
@@ -42,7 +59,11 @@ export class AuthController {
         httpOnly: true,
         secure: true, // HTTPS 사용 시에만 true
       });
-      return { accessToken: newTokens.accessToken };
+      return {
+        statusCode: 200,
+        message: '로그인 성공',
+        accessToken: newTokens.accessToken,
+      };
     } catch (error) {
       console.log(error);
       throw new UnauthorizedException('토큰 생성 실패');

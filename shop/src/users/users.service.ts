@@ -25,6 +25,7 @@ export class UsersService {
 
   async signUp(data: JoinRequestDto) {
     const { email, nickname, password } = data;
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -45,7 +46,9 @@ export class UsersService {
       });
 
       await queryRunner.commitTransaction();
-      return { email: returned.email, nickname: returned.nickname };
+
+      const { password, ...withoutPassword } = returned;
+      return withoutPassword;
     } catch (error) {
       console.log(error);
       await queryRunner.rollbackTransaction();
