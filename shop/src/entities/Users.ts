@@ -12,6 +12,11 @@ import { Posts } from './Posts';
 import { Comments } from './Comments';
 import { ApiProperty } from '@nestjs/swagger';
 
+export enum UserRoleType {
+  USER = 'ROLE_USER',
+  ADMIN = 'ROLE_ADMIN',
+  ANONYMOUS = 'ROLE_ANONYMOUS',
+}
 @Entity({ schema: 'shop', name: 'users' })
 export class Users {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
@@ -19,7 +24,6 @@ export class Users {
 
   @ApiProperty({
     example: 'abc123@naver.com',
-    description: 'email',
     required: true,
   })
   @IsEmail()
@@ -28,7 +32,6 @@ export class Users {
 
   @ApiProperty({
     example: '메시',
-    description: 'nickname',
     required: true,
   })
   @IsString()
@@ -38,13 +41,19 @@ export class Users {
 
   @ApiProperty({
     example: '12345',
-    description: 'password',
     required: true,
   })
   @IsString()
   @IsNotEmpty()
   @Column('varchar', { name: 'password', length: 100, select: false })
   password: string;
+
+  @Column({
+    type: 'enum',
+    enum: UserRoleType,
+    default: UserRoleType.USER,
+  })
+  role: UserRoleType;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -55,9 +64,9 @@ export class Users {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-  @OneToMany(() => Posts, (posts) => posts.Author)
+  @OneToMany(() => Posts, (posts) => posts.user)
   Posts: Posts[];
 
-  @OneToMany(() => Comments, (comment) => comment.Author)
-  Comments: Comments[];
+  @OneToMany(() => Comments, (comment) => comment.user)
+  comments: Comments[];
 }

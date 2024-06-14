@@ -1,24 +1,32 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { Users } from 'src/entities/Users';
 import { JwtPayload } from './jwt/jwt-payload.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
+    @InjectRepository(Users)
+    private userRepository: Repository<Users>,
     private jwtService: JwtService,
   ) {}
+  private readonly logger = new Logger('AuthSeviceLogger');
 
   async validateUser(email: string, password: string): Promise<Users> {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: ['id', 'nickname', 'role', 'email', 'password'],
+    });
+
     if (!user) {
       throw new NotFoundException('아이디를 확인해주세요.');
     }
@@ -32,22 +40,25 @@ export class AuthService {
     return user;
   }
   async tokenValidateUser(payload: JwtPayload) {
-    return await this.usersService.findByFields({
-      where: { id: payload.id },
-    });
+    return await this.userRepository.findOne({ where: { id: payload.id } });
   }
   async generateTokens(user: Users) {
     const payload = {
       id: user.id,
       email: user.email,
       nickname: user.nickname,
+      role: user.role,
     };
-    const accessToken = await this.jwtService.sign(payload);
-    const refreshToken = await this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
-    });
-    return { accessToken, refreshToken };
+    try {
+      const accessToken = await this.jwtService.sign(payload);
+      const refreshToken = await this.jwtService.sign(payload, {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
+      });
+      return { accessToken, refreshToken };
+    } catch (error) {
+      throw new UnauthorizedException(`로그인 실패 error: ${error}`);
+    }
   }
 
   async refreshToken(token: string) {

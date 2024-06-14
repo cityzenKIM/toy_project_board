@@ -1,7 +1,9 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -11,33 +13,56 @@ import {
 import { Users } from './Users';
 import { Comments } from './Comments';
 import { IsNotEmpty, IsString } from 'class-validator';
+import { PostViews } from './PostViews';
+import { ApiProperty } from '@nestjs/swagger';
 
+export enum PostCategory {
+  NOTICE = 'NOTICE',
+  QA = 'QA',
+  ONE_ON_ONE = 'ONE_ON_ONE',
+}
+
+@Index(['deletedAt'])
 @Entity({ schema: 'shop', name: 'post' })
 export class Posts {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;
 
+  @ApiProperty({
+    example: '글 제목입니다.',
+    required: true,
+  })
   @IsString()
   @IsNotEmpty()
   @Column('varchar', { name: 'title', length: 30 })
   title: string;
 
+  @ApiProperty({
+    example: '글 내용입니다.',
+    required: true,
+  })
   @IsString()
   @IsNotEmpty()
   @Column('text', { name: 'content' })
   content: string;
 
   @IsString()
-  @Column('varchar', { name: 'imgUrl', length: 30 })
+  @Column('varchar', { name: 'imgUrl', nullable: true })
   imgUrl: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @Column('varchar', { name: 'category', length: 10 })
-  category: string;
+  @ApiProperty({
+    example: ' NOTICE or QA or ONE_ON_ONE',
+    required: true,
+  })
+  @Column({
+    type: 'enum',
+    enum: PostCategory,
+    default: PostCategory.NOTICE,
+  })
+  category: PostCategory;
 
-  @Column('int', { name: 'viewCount', default: 0 })
-  viewCount: number;
+  @Column('int', { name: 'views', default: 0 })
+  views: number;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -45,13 +70,19 @@ export class Posts {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => Comments, (comments) => comments.postId)
-  Comments: Comments[];
+  @DeleteDateColumn({ nullable: true })
+  deletedAt?: Date;
+
+  @OneToMany(() => Comments, (comments) => comments.post)
+  comments: Comments[];
+
+  @OneToMany(() => PostViews, (postViews) => postViews.post)
+  postViews: PostViews[];
 
   @ManyToOne(() => Users, (users) => users.Posts, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
-  @JoinColumn([{ name: 'Author', referencedColumnName: 'id' }])
-  Author: Users;
+  @JoinColumn([{ name: 'userId', referencedColumnName: 'id' }])
+  user: Users;
 }

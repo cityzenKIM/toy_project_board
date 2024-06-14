@@ -2,16 +2,18 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import { HttpExceptionFilter } from './common/exceptions/http-exception.filter';
 
 declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors({
-    origin: true,
-    credentials: true,
-  });
+  // app.enableCors({
+  //   origin: true,
+  //   credentials: true,
+  // });
+  app.useGlobalFilters(new HttpExceptionFilter());
   app.use(cookieParser());
 
   // 스웨거 모듈
