@@ -9,7 +9,6 @@ import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  private readonly logger = new Logger('JwtAuthGuardLogger');
   constructor(private readonly jwtService: JwtService) {
     super();
   }
@@ -25,7 +24,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (!token) {
       throw new UnauthorizedException('토큰이 존재하지 않습니다.');
     }
-    this.logger.log('token', token);
+
     try {
       const decoded = this.jwtService.verify(token);
       request.user = decoded;

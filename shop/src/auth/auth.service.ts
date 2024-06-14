@@ -24,7 +24,7 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<Users> {
     const user = await this.userRepository.findOne({
       where: { email },
-      select: ['id', 'nickname', 'email', 'password'],
+      select: ['id', 'nickname', 'role', 'email', 'password'],
     });
 
     if (!user) {
@@ -47,6 +47,7 @@ export class AuthService {
       id: user.id,
       email: user.email,
       nickname: user.nickname,
+      role: user.role,
     };
     try {
       const accessToken = await this.jwtService.sign(payload);

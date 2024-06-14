@@ -59,7 +59,7 @@ export class AuthController {
   @Post('refresh')
   async refreshToken(@Req() req, @Res() res: Response) {
     const refreshToken = req.cookies['refresh_token'];
-    this.logger.log(refreshToken);
+
     if (!refreshToken) {
       throw new UnauthorizedException('토큰이 존재하지 않습니다.');
     }
