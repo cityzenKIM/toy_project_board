@@ -61,7 +61,7 @@ export class Posts {
   })
   category: PostCategory;
 
-  @Column('int', { name: 'views', default: 0 })
+  @Column('int', { name: 'views', default: 1 })
   views: number;
 
   @CreateDateColumn()

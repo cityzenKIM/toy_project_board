@@ -29,11 +29,6 @@ export class PostsService {
     private dataSource: DataSource,
   ) {}
 
-  // private adminRoleCheck(role: UserRoleType, category: PostCategory) {
-  //   if (category === PostCategory.NOTICE && role !== UserRoleType.ADMIN) {
-  //     throw new UnauthorizedException('공지사항은 관리자만 작성이 가능합니다.');
-  //   }
-  // }
   async createPost(
     userId: number,
     createPostDto: CreatePostDto,
@@ -66,6 +61,11 @@ export class PostsService {
       post.user = user;
       await queryRunner.manager.getRepository(Posts).save(post);
 
+      // postView 추가
+      const postView = new PostViews();
+      postView.post = post;
+      await queryRunner.manager.getRepository(PostViews).save(postView);
+
       if (image) {
         const imgUrl = await this.awsS3Service.uploadFileToS3('postImg', image);
         post.imgUrl = imgUrl;
@@ -86,7 +86,6 @@ export class PostsService {
       .createQueryBuilder('post')
       .leftJoin('post.user', 'user')
       .addSelect(['user.id', 'user.nickname'])
-      .where('post.deletedAt is NULL')
       .getMany();
   }
 
@@ -97,7 +96,6 @@ export class PostsService {
         .leftJoin('post.user', 'user')
         .addSelect(['user.id', 'user.nickname'])
         .where('post.category = :category', { category })
-        .andWhere('post.deletedAt is NULL')
         .getMany();
     } catch (error) {
       throw new NotFoundException(`조회 실패 errror: ${error}`);
@@ -135,16 +133,14 @@ export class PostsService {
         dateFilter = new Date(0);
         break;
     }
-
     return await this.postsRepository
       .createQueryBuilder('post')
       .leftJoin('post.postViews', 'postView')
-      .leftJoinAndSelect('post.user', 'user')
-      .addSelect(['user.id', 'user.username'])
+      .leftJoin('post.user', 'user')
+      .addSelect(['user.id', 'user.nickname'])
       .where('postView.viewedAt >= :dateFilter', { dateFilter })
-      .andWhere('post.deletedAt IS NULL')
       .groupBy('post.id')
-      .orderBy('COUNT(postView.id)', 'DESC')
+      .orderBy('COUNT(post.views)', 'DESC')
       .getMany();
   }
 
@@ -155,7 +151,8 @@ export class PostsService {
       .addSelect(['user.id', 'user.nickname'])
       .where('post.id = :id', { id })
       .getOne();
-    if (!post || post.deletedAt) {
+
+    if (!post) {
       throw new NotFoundException(`해당 글이 존재하지 않습니다.`);
     }
     return post;
@@ -163,37 +160,15 @@ export class PostsService {
 
   // 글 상세 조회
   async getPostByIdForViewing(id: number): Promise<Posts> {
-    //! query 수정 필요 parents?
-    const post = await this.postsRepository
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.comments', 'comment')
-      .leftJoinAndSelect('comment.user', 'commentUser')
-      .leftJoinAndSelect('comment.children', 'childComment')
-      .leftJoinAndSelect('childComment.user', 'childCommentUser')
-      .leftJoinAndSelect('post.user', 'user')
-      .addSelect([
-        'user.nickname',
-        'commentUser.nickname',
-        'childCommentUser.nickname',
-      ])
-      .where('post.id = :id', { id })
-      .andWhere('post.deletedAt IS NULL')
-      .andWhere('comment.deletedAt IS NULL')
-      .andWhere('childComment.deletedAt IS NULL')
-      .getOne();
+    const post = await this.getPostById(id);
 
-    if (!post || post.deletedAt) {
-      throw new NotFoundException(`해당 글이 존재하지 않습니다.`);
-    }
     // 조회수 증가
     post.views += 1;
     await this.postsRepository.save(post);
 
-    const postView = await this.postViewsRepository.create({ post });
+    const postView = new PostViews();
+    postView.post = post;
     await this.postViewsRepository.save(postView);
-
-    // 댓글 데이터를 계층 구조로 만들어 보낸다
-    post.comments = this.commentsService.buildCommentsHierarchy(post.comments);
 
     return post;
   }
