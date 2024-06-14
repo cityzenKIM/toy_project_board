@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JoinRequestDto } from './dto/join-user.dto';
 import { DataSource, FindOneOptions, Repository } from 'typeorm';
@@ -39,20 +43,17 @@ export class UsersService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     try {
-      const returned = await queryRunner.manager.getRepository(Users).save({
+      const user = await queryRunner.manager.getRepository(Users).save({
         email,
         nickname,
         password: hashedPassword,
       });
 
       await queryRunner.commitTransaction();
-
-      const { password, ...withoutPassword } = returned;
-      return withoutPassword;
+      return user;
     } catch (error) {
-      console.log(error);
       await queryRunner.rollbackTransaction();
-      throw error;
+      throw new BadRequestException(`회원가입 실패: ${error}`);
     } finally {
       await queryRunner.release();
     }
