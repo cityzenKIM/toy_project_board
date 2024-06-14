@@ -8,6 +8,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Users } from './entities/Users';
 import { Posts } from './entities/Posts';
 import { Comments } from './entities/Comments';
+import { PostsModule } from './posts/posts.module';
+import { CommentsModule } from './comments/comments.module';
+import { PostViews } from './entities/PostViews';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -20,15 +24,18 @@ import { Comments } from './entities/Comments';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       autoLoadEntities: true,
-      entities: [Users, Posts, Comments],
+      entities: [Users, Posts, PostViews, Comments],
       keepConnectionAlive: true,
       migrations: [__dirname + '/migrations/*.ts'],
       charset: 'utf8mb4_general_ci',
-      synchronize: false,
+      synchronize: true,
       logging: true,
     }),
     AuthModule,
     UsersModule,
+    PostsModule,
+    CommentsModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
