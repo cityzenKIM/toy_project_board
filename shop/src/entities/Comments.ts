@@ -1,22 +1,34 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Users } from './Users';
 import { Posts } from './Posts';
+import { IsNotEmpty, IsString } from 'class-validator';
 
+@Index(['deletedAt'])
 @Entity({ schema: 'shop', name: 'comment' })
 export class Comments {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;
 
+  @IsString()
+  @IsNotEmpty()
   @Column('text', { name: 'content' })
   content: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Column('varchar', { name: 'nickname', length: 30 })
+  authorNickname: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -24,20 +36,32 @@ export class Comments {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  //   @Column('varchar', { name: 'authorNickname', length: 30 })
-  //   authorNickName: string;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt?: Date;
 
-  @ManyToOne(() => Users, (users) => users.Comments, {
-    onDelete: 'SET NULL',
+  // 자식 댓글
+  @OneToMany(() => Comments, (comments) => comments.parent)
+  children: Comments[];
+
+  // 부모 댓글
+  @ManyToOne(() => Comments, (comments) => comments.children, {
+    onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
-  @JoinColumn([{ name: 'AuthorId', referencedColumnName: 'id' }])
-  Author: Users;
+  @JoinColumn({ name: 'parentId', referencedColumnName: 'id' })
+  parent: Comments;
 
-  @ManyToOne(() => Posts, (posts) => posts.Comments, {
-    onDelete: 'SET NULL',
+  @ManyToOne(() => Users, (users) => users.comments, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'userId', referencedColumnName: 'id' }])
+  user: Users;
+
+  @ManyToOne(() => Posts, (posts) => posts.comments, {
+    onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
   @JoinColumn([{ name: 'postId', referencedColumnName: 'id' }])
-  postId: Posts;
+  post: Posts;
 }
