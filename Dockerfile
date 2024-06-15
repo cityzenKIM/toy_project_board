@@ -2,10 +2,10 @@
 FROM node:14-alpine
 
 # Create and set the working directory
-WORKDIR /shop
+WORKDIR /app
 
 # Copy package.json and package-lock.json
-COPY package*.json ./
+COPY /shop/package*.json ./
 
 # Install dependencies
 RUN npm install
