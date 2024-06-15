@@ -2,7 +2,7 @@
 FROM node:14-alpine
 
 # Create and set the working directory
-WORKDIR /app
+WORKDIR /shop
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
