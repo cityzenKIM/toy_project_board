@@ -1,80 +1,83 @@
 name: CI/CD
 
 on:
-  # main branch에 푸시 시
+  # acion branch에 푸시 시
   push:
-    branches: ['feature/action']
+    branches: ["action"]
 
-  # main branch에 PR 시
+  # action branch에 PR 시
   pull_request:
-    branches: ['feature/action']
-
+    branches: ["action"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    # - name: Run tests
-    #   run: npm test
-    
-    - name: create env file
-      working-directory: ./shop
-      run: |
-        touch .env
-        echo "PORT=${{ secrets.NEST_APP_PORT }}" >> .env
-        echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
-        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-        echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
-        echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> .env
-        echo "JWT_REFRESH_SECRET =${{ secrets.JWT_REFRESH_SECRET  }}" >> .env
-        echo "JWT_ACCESS_EXPIRATION_TIME =${{ secrets.JWT_ACCESS_EXPIRATION_TIME  }}" >> .env
-        echo "JWT_REFRESH_EXPIRATION_TIME =${{ secrets.JWT_REFRESH_EXPIRATION_TIME  }}" >> .env
-        echo "SWAGGER_USER=${{ secrets.NEST_APP_SWAGGER_USER }}" >> .env
-        echo "SWAGGER_PASSWORD=${{ secrets.NEST_APP_SWAGGER_PASSWORD }}" >> .env
-        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
-        echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
-        echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> .env
-        cat .env
+      # - name: Run tests
+      #   run: npm test
 
-    - name: Build Docker image
-      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/my-nest-app:latest .
+      - name: create .env file
+        working-directory: ./shop
+        run: |
+          touch .env
+          echo "PORT=${{ secrets.NEST_APP_PORT }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
+          echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> .env
+          echo "JWT_REFRESH_SECRET =${{ secrets.JWT_REFRESH_SECRET  }}" >> .env
+          echo "JWT_ACCESS_EXPIRATION_TIME =${{ secrets.JWT_ACCESS_EXPIRATION_TIME  }}" >> .env
+          echo "JWT_REFRESH_EXPIRATION_TIME =${{ secrets.JWT_REFRESH_EXPIRATION_TIME  }}" >> .env
+          echo "SWAGGER_USER=${{ secrets.NEST_APP_SWAGGER_USER }}" >> .env
+          echo "SWAGGER_PASSWORD=${{ secrets.NEST_APP_SWAGGER_PASSWORD }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+          echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> .env
+          cat .env
 
-    - name: Log in to Docker Hub
-      run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+        # run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
-    - name: Push Docker image
-      run: docker push ${{ secrets.DOCKER_USERNAME }}/my-nest-app:latest
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/my-nest-app:latest .
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/my-nest-app:latest
 
-    steps:
-    - name: Deploy to EC2
-      env:
-        EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-        EC2_USER: ec2-user  # EC2 사용자가 다르면 변경
-        EC2_HOST: your-ec2-host  # EC2 인스턴스 IP 또는 호스트네임으로 변경
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      run: |
-        echo "${EC2_SSH_KEY}" > /tmp/ec2_key
-        chmod 600 /tmp/ec2_key
-        ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key $EC2_USER@$EC2_HOST << 'EOF'
-          docker pull $DOCKER_USERNAME/my-nest-app:latest
-          docker stop my-nest-app || true
-          docker rm my-nest-app || true
-          docker run -d -p 3000:3000 --name my-nest-app $DOCKER_USERNAME/my-nest-app:latest
-        EOF
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+
+  #   steps:
+  #     - name: Deploy to EC2
+  #       env:
+  #         EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+  #         EC2_USER: ec2-user # EC2 사용자가 다르면 변경
+  #         EC2_HOST: your-ec2-host # EC2 인스턴스 IP 또는 호스트네임으로 변경
+  #         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  #       run: |
+  #         echo "${EC2_SSH_KEY}" > /tmp/ec2_key
+  #         chmod 600 /tmp/ec2_key
+  #         ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key $EC2_USER@$EC2_HOST << 'EOF'
+  #           docker pull $DOCKER_USERNAME/my-nest-app:latest
+  #           docker stop my-nest-app || true
+  #           docker rm my-nest-app || true
+  #           docker run -d -p 3000:3000 --name my-nest-app $DOCKER_USERNAME/my-nest-app:latest
+  #         EOF

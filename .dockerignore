@@ -1,0 +1,7 @@
+# compiled output
+dist
+node_modules
+test
+Dockerfile
+.dockerignore
+.env
