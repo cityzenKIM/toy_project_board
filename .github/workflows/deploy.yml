@@ -64,18 +64,45 @@ jobs:
     # needs: build
 
     steps:
-      - name: Deploy to EC2
+      - name: Prepare SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/ec2_key
+          chmod 600 /tmp/ec2_key
+
+      - name: login to EC2
         env:
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_USER: ubuntu # EC2 사용자가 다르면 변경
           EC2_HOST: ${{ secrets.EC2_HOST }} # EC2 인스턴스 IP 또는 호스트네임으로 변경
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        run: | #  실행 중인 컨테이너를 중지 & 삭제 후 실행
-          echo "${EC2_SSH_KEY}" > /tmp/ec2_key
-          chmod 600 /tmp/ec2_key
+        run: |
           ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key $EC2_USER@$EC2_HOST << 'EOF'
-            docker pull $DOCKER_USERNAME/my-nest-app:latest
-            docker stop my-nest-app || true
-            docker rm my-nest-app || true
-            docker run -d -p 3000:3000 --name my-nest-app $DOCKER_USERNAME/my-nest-app:latest
-          EOF
+
+      - name: pull docker image
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: |
+          docker pull $DOCKER_USERNAME/my-nest-app:latest
+
+      - name: stop & remove previous docker
+        run: |
+          docker stop my-nest-app || true
+          docker rm my-nest-app || true
+
+      - name: run docker
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: |
+          docker run -d -p 3000:3000 --name my-nest-app $DOCKER_USERNAME/my-nest-app:latest
+
+      # - name: Deploy to EC2
+      #   env:
+      #     EC2_USER: ubuntu # EC2 사용자가 다르면 변경
+      #     EC2_HOST: ${{ secrets.EC2_HOST }} # EC2 인스턴스 IP 또는 호스트네임으로 변경
+      #     DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      #   run: | #  실행 중인 컨테이너를 중지 & 삭제 후 실행
+      #     ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key $EC2_USER@$EC2_HOST << 'EOF'
+      #       docker pull $DOCKER_USERNAME/my-nest-app:latest
+      #       docker stop my-nest-app || true
+      #       docker rm my-nest-app || true
+      #       docker run -d -p 3000:3000 --name my-nest-app $DOCKER_USERNAME/my-nest-app:latest
+      #     EOF
