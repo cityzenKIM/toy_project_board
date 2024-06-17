@@ -71,9 +71,8 @@ jobs:
 
       - name: login to EC2
         env:
-          EC2_USER: ubuntu # EC2 사용자가 다르면 변경
-          EC2_HOST: ${{ secrets.EC2_HOST }} # EC2 인스턴스 IP 또는 호스트네임으로 변경
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          EC2_USER: ubuntu
+          EC2_HOST: ${{ secrets.EC2_HOST }} # EC2 인스턴스 IP
         run: |
           ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key $EC2_USER@$EC2_HOST << 'EOF'
 
