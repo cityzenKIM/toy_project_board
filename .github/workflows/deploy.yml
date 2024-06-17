@@ -76,13 +76,10 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
           ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key $EC2_USER@$EC2_HOST << 'EOF'
-            set -e
             docker pull $DOCKER_USERNAME/my-nest-app:latest
-            docker stop my-nest-app || true
-            docker rm my-nest-app || true
             docker run -d -p 3000:3000 --name my-nest-app $DOCKER_USERNAME/my-nest-app:latest
           EOF
-
+      #      set -e
       # - name: login to EC2
       #   env:
       #     EC2_USER: ubuntu
