@@ -58,7 +58,7 @@ jobs:
   #     - name: Push Docker image
   #       working-directory: ./shop
   #       run: docker push ${{ secrets.DOCKER_USERNAME }}/my-nest-app:latest
-  # 테스트3
+
   deploy:
     runs-on: ubuntu-latest
     # needs: build
