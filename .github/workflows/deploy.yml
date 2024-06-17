@@ -1,13 +1,11 @@
 name: CI/CD
 
 on:
-  # acion branch에 푸시 시
   push:
-    branches: ["action"]
+    branches: ["main"]
 
-  # action branch에 PR 시
   pull_request:
-    branches: ["action"]
+    branches: ["main"]
 
 jobs:
   build:
