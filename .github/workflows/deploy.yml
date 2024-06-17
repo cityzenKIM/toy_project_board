@@ -70,12 +70,8 @@ jobs:
           chmod 600 /tmp/ec2_key
 
       - name: Deploy to EC2
-        env:
-          EC2_USER: ubuntu
-          EC2_HOST: ${{ secrets.EC2_HOST }} # EC2 인스턴스 IP
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key $EC2_USER@$EC2_HOST << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             docker pull ${{ secrets.DOCKER_USERNAME }}/my-nest-app:latest
             docker stop my-nest-app || true
             docker rm my-nest-app || true
