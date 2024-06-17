@@ -79,7 +79,7 @@ jobs:
             docker pull $DOCKER_USERNAME/my-nest-app:latest
             docker run -d -p 3000:3000 --name my-nest-app $DOCKER_USERNAME/my-nest-app:latest
           EOF
-      #      set -e
+
       # - name: login to EC2
       #   env:
       #     EC2_USER: ubuntu
