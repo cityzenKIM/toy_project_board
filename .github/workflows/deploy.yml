@@ -71,7 +71,7 @@ jobs:
 
       - name: Deploy to EC2
         env:
-          EC2_USER: ec2-user # EC2 사용자가 다르면 변경
+          EC2_USER: ubuntu
           EC2_HOST: ${{ secrets.EC2_HOST }} # EC2 인스턴스 IP
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
