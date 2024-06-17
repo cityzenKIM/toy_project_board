@@ -37,7 +37,7 @@ jobs:
           echo "JWT_REFRESH_SECRET =${{ secrets.JWT_REFRESH_SECRET  }}" >> .env
           echo "JWT_ACCESS_EXPIRATION_TIME =${{ secrets.JWT_ACCESS_EXPIRATION_TIME  }}" >> .env
           echo "JWT_REFRESH_EXPIRATION_TIME =${{ secrets.JWT_REFRESH_EXPIRATION_TIME  }}" >> .env
-          echo "AWS_HOST=${{ secrets.AWS_POST }}" >> .env
+          echo "AWS_HOST=${{ secrets.AWS_HOST }}" >> .env
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
           echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
@@ -74,5 +74,5 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/my-nest-app:latest
             docker stop my-nest-app || true
             docker rm my-nest-app || true
-            docker run -d -p 3000:3000 --name my-nest-app ${{ secrets.DOCKER_USERNAME }}/my-nest-app:latest
+            docker run -d -p 80:3000 --name my-nest-app ${{ secrets.DOCKER_USERNAME }}/my-nest-app:latest
           EOF
