@@ -30,6 +30,7 @@ jobs:
         run: |
           touch .env
           echo "PORT=${{ secrets.NEST_APP_PORT }}" >> .env
+          echo "AWS_HOST=${{ secrets.AWS_POST }}" >> .env
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
