@@ -76,19 +76,11 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key $EC2_USER@$EC2_HOST << 'EOF'
 
-      - name: pull docker image
+      - name: pull run docker image
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
           docker pull $DOCKER_USERNAME/my-nest-app:latest
-
-      - name: stop & remove previous docker container
-        run: |
           docker stop my-nest-app || true
           docker rm my-nest-app || true
-
-      - name: run docker
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        run: |
           docker run -d -p 3000:3000 --name my-nest-app $DOCKER_USERNAME/my-nest-app:latest
