@@ -19,7 +19,7 @@ import { UploadsModule } from './uploads/uploads.module';
     TypeOrmModule.forRoot({
       type: 'mysql',
       port: 3306,
-      host: process.env.AWS_HOST,
+      host: 'localhost',
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,

@@ -30,7 +30,6 @@ jobs:
         run: |
           touch .env
           echo "PORT=${{ secrets.NEST_APP_PORT }}" >> .env
-          echo "AWS_HOST=${{ secrets.AWS_POST }}" >> .env
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
@@ -38,8 +37,7 @@ jobs:
           echo "JWT_REFRESH_SECRET =${{ secrets.JWT_REFRESH_SECRET  }}" >> .env
           echo "JWT_ACCESS_EXPIRATION_TIME =${{ secrets.JWT_ACCESS_EXPIRATION_TIME  }}" >> .env
           echo "JWT_REFRESH_EXPIRATION_TIME =${{ secrets.JWT_REFRESH_EXPIRATION_TIME  }}" >> .env
-          echo "SWAGGER_USER=${{ secrets.NEST_APP_SWAGGER_USER }}" >> .env
-          echo "SWAGGER_PASSWORD=${{ secrets.NEST_APP_SWAGGER_PASSWORD }}" >> .env
+          echo "AWS_HOST=${{ secrets.AWS_POST }}" >> .env
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
           echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
