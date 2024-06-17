@@ -12,14 +12,13 @@ import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { PostViews } from './entities/PostViews';
 import { UploadsModule } from './uploads/uploads.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       port: 3306,
-      host: '3.39.250.34',
+      host: '3.39.250.34', //테스트
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
