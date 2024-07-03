@@ -7,6 +7,7 @@
 - rest api
 - typeorm
 - mysql
+- docker
 - github actions
 
 # REST API 문서
