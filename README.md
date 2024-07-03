@@ -1,4 +1,4 @@
-# v8ightcorp_project
+# NestJS 게시판 API
 
 # 사용 기술
 
